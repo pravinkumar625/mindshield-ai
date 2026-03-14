@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+transformers
+google-genai
+torch
+pydantic
+safetensors
