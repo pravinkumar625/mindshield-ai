@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindShield AI | Stress Detection & Recovery</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Analysis Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+</head>
+
+<body>
+    <div class="bg-glow" style="top: -100px; left: -100px;"></div>
+    <div class="bg-glow" style="bottom: -100px; right: -100px;"></div>
+
+    <!-- Auth Container -->
+    <div id="auth-container" class="auth-wrapper">
+        <div class="panel auth-panel">
+            <div class="brand auth-brand">
+                <img src="logo.png" alt="MindShield AI Logo" class="app-logo-main">
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Log in to your wellness dashboard</p>
+
+                <div class="auth-form-grid">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="login-name" placeholder="John Doe" value="John Doe">
+                    </div>
+                    <div class="input-group">
+                        <label>Age</label>
+                        <input type="number" id="login-age" placeholder="25" value="25">
+                    </div>
+                    <div class="input-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="login-phone" placeholder="123-456-7890" value="123-456-7890">
+                    </div>
+                    <div class="input-group">
+                        <label>Email ID</label>
+                        <input type="email" id="login-email" placeholder="user@example.com" value="dummy@example.com">
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>Select Portal Role</label>
+                        <select id="login-role"
+                            style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem; width: 100%; outline: none;">
+                            <option value="patient" style="color: black;">Patient Dashboard</option>
+                            <option value="psychologist" style="color: black;">Psychologist Portal</option>
+                            <option value="admin" style="color: black;">Admin Dashboard</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group-checkbox mt-4">
+                    <input type="checkbox" id="login-terms">
+                    <label for="login-terms">I agree to the <span class="accent-text">Terms & Conditions</span>. I
+                        understand that my personal details and <span class="accent-text">real-time location</span> will
+                        be processed for mental health monitoring.</label>
+                </div>
+
+                <button class="primary-btn mt-2" onclick="handleLogin()">Sign In</button>
+            </div>
+
+            <!-- OTP Form (Hidden initially) -->
+            <div id="otp-form" style="display: none;">
+                <h2>Verification</h2>
+                <p class="auth-subtitle">Enter the OTP sent to your email</p>
+
+                <div class="input-group">
+                    <label>One-Time Password (Dummy: 1234)</label>
+                    <input type="text" id="login-otp" placeholder="1234">
+                </div>
+
+                <button class="primary-btn mt-4" onclick="handleVerifyOTP()">Verify & enter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Application (Patient) -->
+    <main id="main-app" class="app-container" style="display: none;">
+        <!-- Sidebar Navigation -->
+        <aside class="panel sidebar">
+            <div class="brand">
+                <img src="logo.png" alt="MindShield AI Logo" class="app-logo-sidebar">
+            </div>
+
+            <nav class="side-nav">
+                <button onclick="showView('dashboard-view')" class="nav-btn"><i class="fas fa-th-large"></i>
+                    Dashboard</button>
+                <button onclick="showView('chat-view')" class="nav-btn"><i class="fas fa-comment-dots"></i> AI
+                    Chat</button>
+                <button onclick="showView('scanner-view')" class="nav-btn"><i class="fas fa-trace-heart"></i> Bio
+                    Scanner</button>
+                <button onclick="showView('tools-view')" class="nav-btn"><i class="fas fa-spa"></i> Recovery
+                    Tools</button>
+                <button onclick="showView('history-view')" class="nav-btn"><i class="fas fa-file-medical"></i> My
+                    Records</button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <div class="dot"></div>
+                    <span>System Online</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content" id="content-area">
+
+            <!-- VIEW: LANDING (The New First Page) -->
+            <section id="landing-view" class="view-panel" style="display: flex;">
+                <div class="landing-hero">
+                    <div class="hero-text">
+                        <img src="logo.png" alt="MindShield AI Logo" class="app-logo-hero">
+                        <p style="color: var(--text-secondary); font-size: 1.2rem;">Select your path to mental clarity
+                        </p>
+                    </div>
+
+                    <div class="hero-options">
+                        <div class="hero-card" onclick="showView('chat-view')">
+                            <div class="hero-icon"><i class="fas fa-comment-medical"></i></div>
+                            <h3>Start Chat Session</h3>
+                            <p>Speak to our bio-aware empathetic AI for immediate support.</p>
+                            <div class="card-action-btn" style="width: 100%"><i class="fas fa-play"></i> <span>Launch
+                                    Chat</span></div>
+                        </div>
+
+                        <div class="hero-card" onclick="showView('dashboard-view')">
+                            <div class="hero-icon"><i class="fas fa-project-diagram"></i></div>
+                            <h3>Dashboard</h3>
+                            <p>Access bio-scanners, clinical tools, and your records.</p>
+                            <div class="card-action-btn" style="width: 100%"><i class="fas fa-th"></i> <span>View
+                                    Grid</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: DASHBOARD (Now secondary) -->
+            <section id="dashboard-view" class="view-panel" style="display: none;">
+                <header class="view-header">
+                    <h2>Welcome back, <span id="user-display-name">User</span></h2>
+                    <p>How can MindShield support you today?</p>
+                </header>
+
+                <div class="dashboard-grid">
+                    <div class="feature-card main-feature" onclick="showView('chat-view')">
+                        <div class="card-header-flex">
+                            <div class="card-icon"><i class="fas fa-robot"></i></div>
+                            <div class="live-pulse">LIVE ANALYTICS</div>
+                        </div>
+                        <div class="card-body">
+                            <h3>Start AI Healing Session</h3>
+                            <p>Dive into an immersive conversation with our bio-aware empathetic intelligence.</p>
+                        </div>
+                        <div class="card-action-btn"><i class="fas fa-play"></i> <span>Launch Session</span></div>
+                    </div>
+
+                    <div class="feature-card" onclick="showView('scanner-view')">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #3b82f6);"><i
+                                class="fas fa-wave-square"></i></div>
+                        <div class="card-body">
+                            <h3>Bio-Frequency</h3>
+                            <p>Real-time brain-wave & stress mapping via facial acoustics.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-card" onclick="showView('tools-view')">
+                        <div class="card-icon"><i class="fas fa-puzzle-piece"></i></div>
+                        <div class="card-body">
+                            <h3>Recovery Tools</h3>
+                            <p>Bubble Pop & Breathing exercises.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-card highlight"
+                        onclick="window.open('https://www.google.com/maps/search/Tourist+Locations+Nature+Parks+Near+Me', '_blank')">
+                        <div class="card-icon"><i class="fas fa-map-marked-alt"></i></div>
+                        <div class="card-body">
+                            <h3>Nearby Tourist Spots</h3>
+                            <p>Nature parks & relaxing locations near you.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-card" onclick="showView('history-view')">
+                        <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="card-body">
+                            <h3>Stress Trends</h3>
+                            <p>View your clinical stress reports.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-card" onclick="openBookingModal()">
+                        <div class="card-icon"><i class="fas fa-user-md"></i></div>
+                        <div class="card-body">
+                            <h3>Clinical Support</h3>
+                            <p>Book a session with a therapist.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: CHAT -->
+            <section id="chat-view" class="view-panel" style="display: none;">
+                <div class="panel chat-container">
+                    <header class="chat-header">
+                        <div class="chat-title">
+                            <i class="fas fa-comment-dots"></i> Empathetic AI Session
+                        </div>
+                        <div class="ai-interaction-status">
+                            <div id="ai-thinking-waves" class="thinking-waves" style="display: none;">
+                                <span></span><span></span><span></span><span></span>
+                            </div>
+                            <div id="ai-status" class="scanning-badge">Scanning Bio-Signals...</div>
+                        </div>
+                    </header>
+                    <div class="chat-messages" id="chatbox"></div>
+                    <div class="chat-input-area">
+                        <select id="lang-menu" class="glass-select">
+                            <option value="en-US">English</option>
+                            <option value="hi-IN">हिन्दी</option>
+                            <option value="ta-IN">தமிழ்</option>
+                        </select>
+                        <div class="input-wrapper">
+                            <input type="text" id="message" placeholder="Type or speak your thoughts..."
+                                onkeypress="handleKeyPress(event)">
+                        </div>
+                        <button id="mic-btn" class="icon-btn" onclick="toggleDictation()"><i
+                                class="fas fa-microphone"></i></button>
+                        <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: SCANNER -->
+            <section id="scanner-view" class="view-panel" style="display: none;">
+                <div class="scanner-layout">
+                    <div class="panel scanner-main">
+                        <h3>Face & Audio Bio-Sense</h3>
+                        <div class="scanner-box">
+                            <video id="webcam" autoplay muted playsinline></video>
+                            <canvas id="face-canvas" style="position: absolute; inset: 0;"></canvas>
+                            <div class="scanner-overlay"></div>
+                        </div>
+                        <div class="mood-stats">
+                            <div class="stat-card">
+                                <span class="stat-label">Facial Expression</span>
+                                <div class="stat-value" id="live-emotion">Detecting...</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">Vocal Stress Pitch</span>
+                                <div class="stat-value" id="audio-stress">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel stress-trend-panel">
+                        <h3>Biometric Trend</h3>
+                        <div class="graph-container">
+                            <canvas id="stress-chart"></canvas>
+                        </div>
+                        <button onclick="downloadGraph()" class="secondary-btn mt-4"><i class="fas fa-download"></i>
+                            Export Stress Report</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: TOOLS -->
+            <section id="tools-view" class="view-panel" style="display: none;">
+                <div class="tools-grid">
+                    <div class="panel tool-launch-card" onclick="startGame('bubble')">
+                        <div class="tool-icon">🫧</div>
+                        <h3>Bubble Pop</h3>
+                        <p>Physical tension release through interaction.</p>
+                        <button class="primary-btn">Start Exercise</button>
+                    </div>
+                    <div class="panel tool-launch-card" onclick="startGame('breathing')">
+                        <div class="tool-icon">🧘‍♂️</div>
+                        <h3>Quick Relief</h3>
+                        <p>Guided rhythmic 4-7-8 breathing sessions.</p>
+                        <button class="primary-btn">Start Exercise</button>
+                    </div>
+                    <div class="panel tool-launch-card"
+                        onclick="window.open('https://open.spotify.com/playlist/37i9dQZF1DWWQRwui0ExPn', '_blank')">
+                        <div class="tool-icon">🎵</div>
+                        <h3>Chill Lofi Zone</h3>
+                        <p>Curated soundscapes for deep relaxation.</p>
+                        <button class="primary-btn" style="background:#1ed760">Open Spotify</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: HISTORY -->
+            <section id="history-view" class="view-panel" style="display: none;">
+                <div class="panel history-container" style="padding: 2rem;">
+                    <h3>Clinical Records & Medical History</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Access your past biometric analysis
+                        and session summaries.</p>
+                    <button id="download-history-btn" onclick="downloadMedicalHistory()" class="primary-btn"
+                        style="max-width: 300px;">
+                        <i class="fas fa-file-medical"></i> Download PDF History
+                    </button>
+
+                    <div class="founder-section" style="margin-top: 4rem;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 1rem; letter-spacing: 1px;">THE
+                            VISIONARIES</h4>
+                        <div class="founder-names">
+                            <div class="founder-card">
+                                <span class="founder-name">Pravin Kumar</span>
+                                <span class="founder-degree">B.Tech AI & ML</span>
+                            </div>
+                            <div class="founder-card">
+                                <span class="founder-name">Ashwath Narayana</span>
+                                <span class="founder-degree">B.Tech CS</span>
+                            </div>
+                            <div class="founder-card">
+                                <span class="founder-name">Tejaswini S</span>
+                                <span class="founder-degree">B.Tech AI & ML</span>
+                            </div>
+                            <div class="founder-card">
+                                <span class="founder-name">Shashank R</span>
+                                <span class="founder-degree">B.Tech CS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Professional Hackathon Footer -->
+    <footer id="app-footer" class="app-footer glass-panel">
+        <div class="footer-content">
+            <div class="footer-team">
+                <span class="team-label">FOUNDERS:</span>
+                <span class="team-names">Pravin | Ashwath | Tejaswini | Shashank</span>
+            </div>
+            <div class="footer-meta">
+                <span>© 2026 MindShield AI</span>
+                <span class="divider">|</span>
+                <span class="glow-text">Engineering Mental Excellence</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Customer Support FAB (Floating Action Button) -->
+    <button id="support-btn" class="support-fab" style="display: none;"
+        onclick="alert('Customer Support line connecting...\\n\\nPlease email support@mindshield-ai.hackathon for immediate assistance.')">
+        <i class="fas fa-headset"></i>
+    </button>
+
+    <!-- Game Overlay -->
+    <div id="game-overlay"
+        style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 100; backdrop-filter: blur(20px); align-items: center; justify-content: center; flex-direction: column; overflow-y: auto; padding: 2rem 0;">
+        <button onclick="closeGame()"
+            style="position: absolute; top: 30px; right: 30px; background: none; border: none; color: white; font-size: 2rem; cursor: pointer;">
+            <i class="fas fa-times"></i>
+        </button>
+        <div id="game-content"
+            style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;"></div>
+    </div>
+
+    <!-- Appointment Booking Modal (Patient) -->
+    <div id="booking-modal"
+        style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 200; backdrop-filter: blur(20px); overflow-y: auto; padding: 2rem 1rem;">
+        <div class="panel" style="width: 500px; padding: 2rem; position: relative; margin: auto;">
+            <button onclick="document.getElementById('booking-modal').style.display='none'"
+                style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; cursor: pointer; font-size: 1.5rem;"><i
+                    class="fas fa-times"></i></button>
+            <h2 style="margin-bottom: 1rem;"><i class="fas fa-calendar-check" style="color: var(--accent-primary);"></i>
+                Book Clinical Appointment</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Our AI detected elevated stress levels. We
+                recommend consulting a professional.</p>
+
+            <div class="input-group">
+                <label>Select Center (Bangalore)</label>
+                <select id="clinic-selection"
+                    style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem; width: 100%; outline: none;">
+                    <option value="MindCare Koramangala" style="color: black;">MindCare Clinic - Koramangala (Dr.
+                        Smitha, 98765-43210)</option>
+                    <option value="Serenity Indiranagar" style="color: black;">Serenity Center - Indiranagar (Dr. Raj,
+                        91234-56789)</option>
+                    <option value="Whitefield Mental Health" style="color: black;">Whitefield Mental Health (Dr. Priya,
+                        99887-76655)</option>
+                </select>
+            </div>
+            <div class="input-group mt-4">
+                <label><i class="fas fa-notes-medical" style="color: var(--accent-primary);"></i> Reason / Cause of
+                    Visit</label>
+                <input type="text" id="visit-reason" placeholder="e.g. Anxiety, Sleep issues, Work stress..."
+                    style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem; width: 100%; outline: none;">
+            </div>
+            <div class="input-group mt-4">
+                <label><i class="fas fa-laptop-medical" style="color: var(--accent-primary);"></i> Consultation
+                    Type</label>
+                <select id="visit-type" onchange="toggleDoctorField()"
+                    style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem; width: 100%; outline: none;">
+                    <option value="Online" style="color: black;">Online (Tele-consultation)</option>
+                    <option value="Offline" style="color: black;">Offline (In-person Visit)</option>
+                </select>
+            </div>
+            <div class="input-group mt-4" id="doctor-name-group" style="display: none;">
+                <label><i class="fas fa-user-md" style="color: #10b981;"></i> Doctor Name (In-person Visit)</label>
+                <input type="text" id="doctor-name" placeholder="e.g. Dr. Smitha Reddy"
+                    style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem; width: 100%; outline: none;">
+            </div>
+            <div class="input-group mt-4">
+                <label>Preferred Date & Time</label>
+                <input type="datetime-local" id="appointment-time"
+                    style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem; width: 100%; outline: none;">
+            </div>
+
+            <button class="primary-btn mt-4" onclick="confirmBooking()">Confirm Booking</button>
+            <div id="booking-confirmation"
+                style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; border-radius: 8px; color: #10b981;">
+                Appointment Confirmed!
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <main id="admin-dashboard" class="app-container"
+        style="display: none; grid-template-columns: 1fr; align-items: start;">
+        <div class="panel" style="padding: 2rem;">
+            <h1 style="margin-bottom: 1.5rem;"><i class="fas fa-server"></i> System Administrator Dashboard</h1>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                <div class="stat-card" style="background: rgba(56, 189, 248, 0.1);"><span class="stat-label">Active
+                        Users</span>
+                    <div class="stat-value">1,248</div>
+                </div>
+                <div class="stat-card" style="background: rgba(16, 185, 129, 0.1);"><span class="stat-label">System
+                        Health</span>
+                    <div class="stat-value" style="color:#10b981;">99.9%</div>
+                </div>
+                <div class="stat-card" style="background: rgba(239, 68, 68, 0.1);"><span class="stat-label">Critical
+                        Alerts</span>
+                    <div class="stat-value" style="color:#ef4444;">2</div>
+                </div>
+            </div>
+            <h3>Recent System Logs</h3>
+            <ul style="list-style: none; margin-top: 1rem; color: #94a3b8; font-family: monospace;">
+                <li style="padding: 0.5rem; border-bottom: 1px solid var(--glass-border);">[INFO] Face-API Model
+                    initialized successfully.</li>
+                <li style="padding: 0.5rem; border-bottom: 1px solid var(--glass-border);">[WARN] High stress alert
+                    triggered for User ID MS-8821.</li>
+                <li style="padding: 0.5rem; border-bottom: 1px solid var(--glass-border);">[INFO] OTP requested by
+                    dummy@example.com via 192.168.1.10.</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- Psychologist Dashboard -->
+    <main id="psychologist-dashboard" class="app-container"
+        style="display: none; grid-template-columns: 350px 1fr; gap: 1.5rem;">
+        <aside class="panel sidebar">
+            <h2 style="margin-bottom: 1rem;"><i class="fas fa-user-md"></i> Clinic Admin</h2>
+            <div style="margin-bottom: 2rem;">
+                <p style="color: #94a3b8; font-size: 0.9rem;">Dr. Smitha, Ph.D.</p>
+                <p style="color: #94a3b8; font-size: 0.9rem;">MindCare Clinic, Koramangala</p>
+                <p style="color: #94a3b8; font-size: 0.9rem;">Contact: +91 98765-43210</p>
+            </div>
+            <h3>Upcoming Patients</h3>
+            <ul id="psych-patient-list" style="list-style: none; margin-top: 1rem;">
+                <!-- Dynamically populated -->
+                <li
+                    style="padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 0.5rem;">
+                    <strong>Rahul S.</strong> (Age 28)<br>
+                    <span style="font-size: 0.8rem; color: var(--accent-primary);">Today, 4:00 PM</span><br>
+                    <span style="font-size: 0.8rem; color: #ef4444;">Avg Stress: 78% (Severe)</span>
+                </li>
+            </ul>
+        </aside>
+        <section class="panel" style="padding: 2rem;">
+            <h2>Patient Detailed Report Analytics</h2>
+            <p style="color: var(--text-secondary); margin-top: 0.5rem;">Select a patient from the sidebar to view their
+                full clinical graph sheet and system history. Data is strictly confidential.</p>
+            <div id="psych-patient-details"
+                style="height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed var(--glass-border); border-radius: 12px; margin-top: 2rem; color: #94a3b8; padding: 1rem;">
+                <i class="fas fa-chart-line"
+                    style="font-size: 3rem; margin-bottom: 1rem; color: var(--glass-border);"></i>
+                <p>Select a patient log from the left panel to load clinical data.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js?v=2"></script>
+</body>
+
+</html>
